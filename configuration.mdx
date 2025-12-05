@@ -1,0 +1,170 @@
+---
+title: Configuration
+description: Configure your documentation settings and customize the platform to your needs
+---
+
+## Configuration Overview
+
+alabdalihussain7 Documentation offers extensive configuration options to customize your documentation experience. From theme settings to access controls, you can tailor the platform to match your organization's branding and workflow requirements.
+
+<Columns cols={2}>
+  <Card title="Theme Settings" icon="palette" href="#themes">
+    Customize colors, fonts, and layout to match your brand.
+  </Card>
+  <Card title="Access Controls" icon="shield" href="#permissions">
+    Set up user roles and permissions for secure collaboration.
+  </Card>
+</Columns>
+
+## Basic Setup
+
+<Steps>
+  <Step title="Access Settings" icon="settings">
+    Navigate to the admin panel and select 'Configuration' from the sidebar.
+  </Step>
+  <Step title="General Settings" icon="cog">
+    Configure basic information like organization name and default language.
+  </Step>
+  <Step title="Save Changes" icon="save">
+    Apply your configuration changes and verify they take effect.
+  </Step>
+</Steps>
+
+## Theme Configuration
+
+<Tabs>
+  <Tab title="Colors" icon="palette">
+    
+    Customize the color scheme to match your brand identity.
+
+    ```javascript
+const theme = {
+  primary: '#3B82F6',
+  secondary: '#64748B',
+  accent: '#F59E0B',
+  background: '#FFFFFF',
+  text: '#1F2937'
+};
+```
+
+    <ParamField body="theme" param-type="object" required="false">
+      Theme configuration object with color properties.
+    </ParamField>
+
+  </Tab>
+  <Tab title="Layout" icon="layout">
+    
+    Adjust layout settings for optimal viewing experience.
+
+    <Expandable title="Layout Options" default-open="false">
+      - Sidebar width and positioning
+      - Header layout and navigation
+      - Content width and spacing
+      - Mobile responsiveness settings
+    </Expandable>
+
+  </Tab>
+  <Tab title="Fonts" icon="type">
+    
+    Choose typography settings for better readability.
+
+    <CodeGroup tabs="CSS,JSON">
+      ```css
+:root {
+  --font-family: 'Inter', sans-serif;
+  --font-size-base: 16px;
+  --line-height: 1.6;
+}
+```
+      ```json
+{
+  "typography": {
+    "fontFamily": "Inter, sans-serif",
+    "fontSize": "16px",
+    "lineHeight": "1.6"
+  }
+}
+```
+    </CodeGroup>
+
+  </Tab>
+</Tabs>
+
+## Permission Settings
+
+<Steps>
+  <Step title="Define Roles" icon="users">
+    Create custom roles like Editor, Reviewer, and Admin with specific permissions.
+  </Step>
+  <Step title="Set Access Levels" icon="lock">
+    Assign permissions for viewing, editing, and publishing documentation.
+  </Step>
+  <Step title="Apply to Users" icon="user-check">
+    Assign roles to individual users or user groups.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Use the principle of least privilege when assigning permissions - give users only the access they need to perform their tasks.
+</Callout>
+
+## Advanced Configuration
+
+| Setting | Description | Default Value |
+|---------|-------------|---------------|
+| API Rate Limit | Maximum requests per minute | 1000 |
+| Session Timeout | User session duration in minutes | 60 |
+| Backup Frequency | How often to create backups | Daily |
+| Audit Logging | Enable detailed activity logs | Enabled |
+
+<ExpandableGroup>
+  <Expandable title="How do I enable dark mode?" default-open="false">
+    Go to Settings > Appearance > Theme and select 'Dark' from the theme dropdown. The change applies immediately.
+  </Expandable>
+  <Expandable title="Can I import custom CSS?" default-open="false">
+    Yes, advanced users can upload custom CSS files in the Theme settings. Contact support for CSS customization guidelines.
+  </Expandable>
+</ExpandableGroup>
+
+## Integration Configuration
+
+<CodeGroup tabs="Webhook,API">
+  ```json
+{
+  "webhooks": {
+    "url": "https://your-app.com/webhook",
+    "events": ["doc.created", "doc.updated"],
+    "secret": "your_webhook_secret"
+  }
+}
+```
+  ```javascript
+const config = {
+  api: {
+    baseUrl: 'https://api.alabdalihussain7.com',
+    timeout: 30000,
+    retries: 3
+  }
+};
+```
+</CodeGroup>
+
+<Request tabs="cURL">
+  ```bash
+curl -X PUT https://api.alabdalihussain7.com/config \
+  -H 'Authorization: Bearer your_api_key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "theme": {
+      "primaryColor": "#3B82F6"
+    },
+    "permissions": {
+      "defaultRole": "viewer"
+    }
+  }'
+```
+</Request>
+
+<Callout kind="info">
+  Configuration changes may take up to 5 minutes to propagate across all servers in distributed deployments.
+</Callout>

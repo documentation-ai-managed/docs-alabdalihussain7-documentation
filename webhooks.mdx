@@ -1,0 +1,209 @@
+---
+title: Webhooks
+description: Set up webhooks to receive real-time notifications about documentation events
+---
+
+## Webhooks Overview
+
+Webhooks in alabdalihussain7 Documentation allow you to receive real-time notifications when specific events occur in your documentation spaces. This enables automation, integration with external systems, and keeping your team informed about important changes.
+
+<Columns cols={3}>
+  <Card title="Event Types" icon="bell" href="#events">
+    Learn about available webhook events and their payloads.
+  </Card>
+  <Card title="Security" icon="shield" href="#security">
+    Secure your webhooks with signatures and authentication.
+  </Card>
+  <Card title="Testing" icon="check-circle" href="#testing">
+    Test and debug your webhook integrations.
+  </Card>
+</Columns>
+
+## Setting Up Webhooks
+
+<Steps>
+  <Step title="Create Endpoint" icon="server">
+    Set up an HTTPS endpoint in your application to receive webhook payloads.
+  </Step>
+  <Step title="Configure Webhook" icon="settings">
+    In your documentation settings, add the webhook URL and select events to monitor.
+  </Step>
+  <Step title="Add Secret" icon="key">
+    Generate and store a webhook secret for payload verification.
+  </Step>
+  <Step title="Test Connection" icon="zap">
+    Send a test event to verify your endpoint receives and processes webhooks correctly.
+  </Step>
+</Steps>
+
+## Available Events
+
+<Tabs>
+  <Tab title="Document Events" icon="file-text">
+    
+    Events related to document creation, updates, and deletions.
+
+    <ParamField body="event" param-type="string" required="true">
+      Event type (e.g., `doc.created`, `doc.updated`, `doc.deleted`).
+    </ParamField>
+
+    <Request tabs="JSON">
+      ```json
+{
+  "event": "doc.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "id": "doc_123",
+    "title": "New API Guide",
+    "author": "alice@example.com",
+    "url": "https://docs.alabdalihussain7.com/docs/doc_123"
+  }
+}
+```
+    </Request>
+
+  </Tab>
+  <Tab title="User Events" icon="users">
+    
+    Events triggered by user actions and account changes.
+
+    <Expandable title="User Event Types" default-open="false">
+      - `user.invited`: New user invited to documentation space
+      - `user.joined`: User accepts invitation and joins
+      - `user.role_changed`: User role or permissions modified
+      - `user.deactivated`: User account deactivated
+    </Expandable>
+
+  </Tab>
+  <Tab title="Space Events" icon="folder">
+    
+    Events related to documentation space management.
+
+    <CodeGroup tabs="JavaScript,Python">
+      ```javascript
+// Handle space events
+const handleSpaceEvent = (payload) => {
+  if (payload.event === 'space.created') {
+    console.log(`New space: ${payload.data.name}`);
+  }
+};
+```
+      ```python
+def handle_space_event(payload):
+    if payload['event'] == 'space.created':
+        print(f"New space: {payload['data']['name']}")
+```
+    </CodeGroup>
+
+  </Tab>
+</Tabs>
+
+## Security and Verification
+
+<Steps>
+  <Step title="Generate Secret" icon="key">
+    Create a unique secret key for your webhook endpoint.
+  </Step>
+  <Step title="Verify Signature" icon="shield">
+    Use HMAC-SHA256 to verify the webhook signature on incoming requests.
+  </Step>
+  <Step title="Handle Failures" icon="alert-triangle">
+    Implement retry logic and failure handling for reliable delivery.
+  </Step>
+</Steps>
+
+<Callout kind="danger">
+  Always verify webhook signatures to prevent spoofing attacks. Never process unsigned payloads in production.
+</Callout>
+
+## Best Practices
+
+| Practice | Reason | Implementation |
+|----------|--------|----------------|
+| Use HTTPS | Encrypt data in transit | Configure SSL certificates |
+| Verify Signatures | Prevent unauthorized access | HMAC-SHA256 verification |
+| Handle Retries | Ensure reliable delivery | Idempotent processing |
+| Monitor Delivery | Track webhook health | Logging and alerting |
+| Rate Limiting | Prevent abuse | Implement throttling |
+
+<ExpandableGroup>
+  <Expandable title="How do I debug webhook issues?" default-open="false">
+    Use webhook testing tools like ngrok or webhook.site to inspect payloads and verify your endpoint receives data correctly.
+  </Expandable>
+  <Expandable title="What happens if my endpoint fails?" default-open="false">
+    We retry failed deliveries up to 3 times with exponential backoff. After that, the event is logged and can be resent manually.
+  </Expandable>
+</ExpandableGroup>
+
+## Example Implementation
+
+<CodeGroup tabs="Node.js,Go">
+  ```javascript
+const crypto = require('crypto');
+const express = require('express');
+
+const app = express();
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+
+app.post('/webhook', express.json(), (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const payload = JSON.stringify(req.body);
+  
+  const expectedSignature = crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(payload)
+    .digest('hex');
+  
+  if (signature !== expectedSignature) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process the webhook
+  console.log('Received event:', req.body.event);
+  
+  res.status(200).send('OK');
+});
+
+app.listen(3000);
+```
+  ```go
+package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "fmt"
+    "io/ioutil"
+    "net/http"
+    "os"
+)
+
+func main() {
+    secret := os.Getenv("WEBHOOK_SECRET")
+    
+    http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
+        body, _ := ioutil.ReadAll(r.Body)
+        signature := r.Header.Get("X-Webhook-Signature")
+        
+        mac := hmac.New(sha256.New, []byte(secret))
+        mac.Write(body)
+        expectedMAC := hex.EncodeToString(mac.Sum(nil))
+        
+        if !hmac.Equal([]byte(signature), []byte(expectedMAC)) {
+            http.Error(w, "Invalid signature", 401)
+            return
+        }
+        
+        fmt.Printf("Received event: %s\n", string(body))
+        w.WriteHeader(200)
+    })
+    
+    http.ListenAndServe(":8080", nil)
+}
+```
+</CodeGroup>
+
+<Callout kind="tip">
+  Test your webhook implementation thoroughly before deploying to production. Use tools like Postman or curl to simulate webhook payloads.
+</Callout>
